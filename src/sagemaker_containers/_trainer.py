@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -65,7 +65,10 @@ def train():
         env = sagemaker_containers.training_env()
 
         region = os.environ.get("AWS_REGION", os.environ.get(_params.REGION_NAME_ENV))
-        intermediate_sync = _intermediate_output.start_sync(env.sagemaker_s3_output(), region)
+        s3_endpoint_url = os.environ.get(_params.S3_ENDPOINT_URL, None)
+        intermediate_sync = _intermediate_output.start_sync(
+            env.sagemaker_s3_output(), region, endpoint_url=s3_endpoint_url
+        )
 
         if env.framework_module:
             framework_name, entry_point_name = env.framework_module.split(":")

@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -28,19 +28,25 @@ builtins_open = "__builtin__.open" if PY2 else "builtins.open"
 
 @patch("boto3.resource", autospec=True)
 @pytest.mark.parametrize(
-    "url,bucket_name,key,dst",
+    "url,bucket_name,key,dst,endpoint",
     [
-        ("S3://my-bucket/path/to/my-file", "my-bucket", "path/to/my-file", "/tmp/my-file"),
-        ("s3://my-bucket/my-file", "my-bucket", "my-file", "/tmp/my-file"),
+        ("S3://my-bucket/path/to/my-file", "my-bucket", "path/to/my-file", "/tmp/my-file", None),
+        ("s3://my-bucket/my-file", "my-bucket", "my-file", "/tmp/my-file", "http://localhost:9000"),
     ],
 )
-def test_s3_download(resource, url, bucket_name, key, dst):
+def test_s3_download(resource, url, bucket_name, key, dst, endpoint):
     region = "us-west-2"
     os.environ[_params.REGION_NAME_ENV] = region
+    if endpoint is not None:
+        os.environ[_params.S3_ENDPOINT_URL] = endpoint
 
     _files.s3_download(url, dst)
 
-    chain = call("s3", region_name=region).Bucket(bucket_name).download_file(key, dst)
+    chain = (
+        call("s3", region_name=region, endpoint_url=endpoint)
+        .Bucket(bucket_name)
+        .download_file(key, dst)
+    )
     assert resource.mock_calls == chain.call_list()
 
 
@@ -212,14 +218,31 @@ def test_import_module(reload, import_module, install, download_and_extract):
     reload.assert_called_with(import_module(_modules.DEFAULT_MODULE_NAME))
 
 
-def test_download_and_install_local_directory():
-    uri = "/opt/ml/code"
+@patch("sagemaker_containers._modules.exists", return_value=False)
+@patch("sagemaker_containers._files.tmpdir")
+@patch("sagemaker_containers._files.download_and_extract")
+@patch("sagemaker_containers._modules.prepare")
+@patch("sagemaker_containers._modules.install")
+def test_download_and_install(install, prepare, download_and_extract, files_tmpdir, module_exists):
+    files_tmpdir.return_value.__enter__.return_value = "tmp"
+    uri = "s3://foo/bar"
+    _modules.download_and_install(uri)
 
-    with patch("sagemaker_containers._files.s3_download") as s3_download, patch(
-        "sagemaker_containers._modules.prepare"
-    ) as prepare, patch("sagemaker_containers._modules.install") as install:
-        _modules.download_and_install(uri)
+    module_path = os.path.join("tmp", "module_dir")
+    download_and_extract.assert_called_with(uri, module_path)
+    prepare.assert_called_with(module_path, "default_user_module_name")
+    install.assert_called_with(module_path)
 
-        s3_download.assert_not_called()
-        prepare.assert_called_with(uri, "default_user_module_name")
-        install.assert_called_with(uri)
+
+@patch("sagemaker_containers._files.s3_download")
+@patch("tarfile.open")
+@patch("sagemaker_containers._modules.prepare")
+@patch("sagemaker_containers._modules.install")
+def test_download_and_install_local_directory(install, prepare, tarfile, s3_download):
+    uri = "/opt/ml/input/data/code/sourcedir.tar.gz"
+    _modules.download_and_install(uri)
+
+    s3_download.assert_not_called()
+    tarfile.assert_called_with(name="/opt/ml/input/data/code/sourcedir.tar.gz", mode="r:gz")
+    prepare.assert_called_once()
+    install.assert_called_once()

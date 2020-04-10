@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -19,7 +19,6 @@ import subprocess
 import textwrap
 
 import pytest
-import six
 
 from sagemaker_containers.beta.framework import errors, modules
 import test
@@ -46,11 +45,23 @@ REQUIREMENTS_TXT_ASSERT_STR = """
 
 
 @pytest.fixture(name="user_module_name")
-def erase_user_module():
+def uninstall_user_module():
     user_module = "my_test_script"
     yield user_module
+
     try:
         subprocess.check_call(shlex.split("pip uninstall -y --quiet %s" % user_module))
+    except subprocess.CalledProcessError:
+        pass
+
+
+@pytest.fixture(name="requirements_file")
+def uninstall_requirements_file():
+    requirements_data = "pyfiglet"
+    yield test.File("requirements.txt", requirements_data)
+
+    try:
+        subprocess.check_call(shlex.split("pip uninstall -y --quiet %s" % requirements_data))
     except subprocess.CalledProcessError:
         pass
 
@@ -102,7 +113,6 @@ def test_import_module_via_download_and_install(user_module, user_module_name):
 
     modules.download_and_install(user_module.url, name=user_module_name, cache=False)
     module = importlib.import_module(user_module_name)
-    six.moves.reload_module(module)
 
     assert module.validate()
 
@@ -116,7 +126,6 @@ def test_import_module_with_s3_script_via_download_and_install(user_module, user
 
     modules.download_and_install(user_module.url, name=user_module_name, cache=False)
     module = importlib.import_module(user_module_name)
-    six.moves.reload_module(module)
 
     assert module.validate()
 
@@ -133,8 +142,6 @@ data = textwrap.dedent(
 
 USER_SCRIPT_WITH_REQUIREMENTS = test.File("my_test_script.py", data)
 
-REQUIREMENTS_FILE = test.File("requirements.txt", "pyfiglet")
-
 
 @pytest.mark.parametrize(
     "user_module",
@@ -143,8 +150,10 @@ REQUIREMENTS_FILE = test.File("requirements.txt", "pyfiglet")
         test.UserModule(USER_SCRIPT_WITH_REQUIREMENTS),
     ],
 )
-def test_import_module_with_s3_script_with_requirements(user_module, user_module_name):
-    user_module = user_module.add_file(REQUIREMENTS_FILE).upload()
+def test_import_module_with_s3_script_with_requirements(
+    user_module, user_module_name, requirements_file
+):
+    user_module = user_module.add_file(requirements_file).upload()
 
     module = modules.import_module(user_module.url, user_module_name, cache=False)
 
@@ -158,12 +167,13 @@ def test_import_module_with_s3_script_with_requirements(user_module, user_module
         test.UserModule(USER_SCRIPT_WITH_REQUIREMENTS),
     ],
 )
-def test_import_module_with_requirements_via_download_and_install(user_module, user_module_name):
-    user_module = user_module.add_file(REQUIREMENTS_FILE).upload()
+def test_import_module_with_requirements_via_download_and_install(
+    user_module, user_module_name, requirements_file
+):
+    user_module = user_module.add_file(requirements_file).upload()
 
     modules.download_and_install(user_module.url, name=user_module_name, cache=False)
     module = importlib.import_module(user_module_name)
-    six.moves.reload_module(module)
 
     assert module.say() == REQUIREMENTS_TXT_ASSERT_STR
 
@@ -186,8 +196,10 @@ def test_import_module_with_s3_script_with_error(user_module_name):
         test.UserModule(USER_SCRIPT_WITH_REQUIREMENTS),
     ],
 )
-def test_import_module_with_local_tar_via_download_and_extract(user_module, user_module_name):
-    user_module = user_module.add_file(REQUIREMENTS_FILE)
+def test_import_module_with_local_tar_via_download_and_extract(
+    user_module, user_module_name, requirements_file
+):
+    user_module = user_module.add_file(requirements_file)
     tar_name = user_module.create_tar()
 
     module = modules.import_module(tar_name, name=user_module_name, cache=False)

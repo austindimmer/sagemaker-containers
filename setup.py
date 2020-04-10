@@ -1,4 +1,4 @@
-# Copyright 2018-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -38,14 +38,14 @@ required_packages = [
     "flask==1.1.1",
     "gunicorn",
     "typing",
-    "retrying==1.3.3",
+    "retrying>=1.3.3",
     "gevent",
-    "inotify_simple",
-    "werkzeug==0.15.5",
-    "paramiko==2.4.2",
-    "psutil==5.4.8",
+    "inotify_simple==1.2.1",
+    "werkzeug>=0.15.5",
+    "paramiko>=2.4.2",
+    "psutil>=5.6.7",
     "protobuf>=3.1",
-    "scipy==1.2.2",
+    "scipy>=1.2.2",
 ]
 
 # enum is introduced in Python 3.4. Installing enum back port

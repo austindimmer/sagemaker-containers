@@ -1,4 +1,4 @@
-# Copyright 2018-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -166,7 +166,6 @@ def test_mpi_master_run(training_env, popen, policy, ssh_client, path_exists):
             ],
             cwd=_env.code_dir,
             env=ANY,
-            stdout=None,
             stderr=None,
         )
 
@@ -262,7 +261,6 @@ def test_mpi_master_run_python(
             ],
             cwd=_env.code_dir,
             env=ANY,
-            stdout=None,
             stderr=None,
         )
 

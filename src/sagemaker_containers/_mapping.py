@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -165,16 +165,20 @@ class MappingMixin(collections.Mapping):
         return isinstance(getattr(type(self), _property), property)
 
     def __getitem__(self, k):
+        """Placeholder docstring"""
         if not self._is_property(k):
             raise KeyError("Trying to access non property %s" % k)
         return getattr(self, k)
 
     def __len__(self):
+        """Placeholder docstring"""
         return len(self.properties())
 
     def __iter__(self):
+        """Placeholder docstring"""
         items = {_property: getattr(self, _property) for _property in self.properties()}
         return iter(items)
 
     def __str__(self):
+        """Placeholder docstring"""
         return str(dict(self))

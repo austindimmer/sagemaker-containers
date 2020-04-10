@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License'). You
 # may not use this file except in compliance with the License. A copy of
@@ -18,7 +18,6 @@ import os
 import shlex
 import subprocess  # pylint: disable=unused-import
 import sys
-import tarfile
 import textwrap
 import warnings
 
@@ -156,18 +155,8 @@ def download_and_install(uri, name=DEFAULT_MODULE_NAME, cache=True):
 
     if not should_use_cache:
         with _files.tmpdir() as tmpdir:
-            if uri.startswith("s3://"):
-                dst = os.path.join(tmpdir, "tar_file")
-                _files.s3_download(uri, dst)
-                module_path = os.path.join(tmpdir, "module_dir")
-                os.makedirs(module_path)
-
-                with tarfile.open(name=dst, mode="r:gz") as t:
-                    t.extractall(path=module_path)
-
-            else:
-                module_path = uri
-
+            module_path = os.path.join(tmpdir, "module_dir")
+            _files.download_and_extract(uri, module_path)
             prepare(module_path, name)
             install(module_path)
 

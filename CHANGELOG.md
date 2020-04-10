@@ -1,5 +1,81 @@
 # Changelog
 
+## v2.8.6 (2020-04-01)
+
+### Bug Fixes and Other Changes
+
+ * Revert "change: stream stderr even when capture_error is True (#233)"
+
+## v2.8.5 (2020-04-01)
+
+### Bug Fixes and Other Changes
+
+ * relax dependencies version requirements.
+
+## v2.8.4 (2020-03-31)
+
+### Bug Fixes and Other Changes
+
+ * relax psutils version requirements to avoid version conflicts.
+
+## v2.8.3 (2020-03-25)
+
+### Bug Fixes and Other Changes
+
+ * use shlex.quote to construct bash command
+
+## v2.8.2.post0 (2020-03-24)
+
+### Testing and Release Infrastructure
+
+ * fix cleanup with requirements.txt functional tests
+
+## v2.8.2 (2020-03-20)
+
+### Bug Fixes and Other Changes
+
+ * extract module to correct location in download_and_install
+ * vulnerable dependency version
+
+### Testing and Release Infrastructure
+
+ * create __init__.py file for Python 2 import of protobuf during tests
+
+## v2.8.1 (2020-02-20)
+
+### Bug Fixes and Other Changes
+
+ * update copyright year
+
+## v2.8.0 (2020-02-19)
+
+### Features
+
+ * pin inotify-simple version.
+
+## v2.7.0 (2020-02-17)
+
+### Features
+
+ * support specifying S3 endpoint URL
+
+### Bug Fixes and Other Changes
+
+ * Fix memory leak in gethostname and adapt len semantics to Posix
+
+## v2.6.4 (2020-02-07)
+
+### Bug Fixes and Other Changes
+
+ * modify download_and_install to work with local tarball
+ * pin scipy version >= 1.2.2
+
+## v2.6.3 (2020-02-06)
+
+### Bug Fixes and Other Changes
+
+ * patch module.download_and_install to resolve network isolation issue
+
 ## v2.6.2 (2019-12-18)
 
 ### Bug fixes and other changes

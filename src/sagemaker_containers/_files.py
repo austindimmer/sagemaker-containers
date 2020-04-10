@@ -1,4 +1,4 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
 # may not use this file except in compliance with the License. A copy of
@@ -159,6 +159,7 @@ def s3_download(url, dst):  # type: (str, str) -> None
     bucket, key = url.netloc, url.path.lstrip("/")
 
     region = os.environ.get("AWS_REGION", os.environ.get(_params.REGION_NAME_ENV))
-    s3 = boto3.resource("s3", region_name=region)
+    endpoint_url = os.environ.get(_params.S3_ENDPOINT_URL, None)
+    s3 = boto3.resource("s3", region_name=region, endpoint_url=endpoint_url)
 
     s3.Bucket(bucket).download_file(key, dst)
